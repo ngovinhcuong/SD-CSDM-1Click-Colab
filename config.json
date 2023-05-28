@@ -1,5 +1,5 @@
 {
-    "sd_model_checkpoint": "Counterfeit-V3.0_fp16.safetensors",
+    "sd_model_checkpoint": "meinamix_meinaV10.safetensors",
     "sd_checkpoint_cache": 0,
     "sd_vae_checkpoint_cache": 0,
     "sd_vae": "clearvae_main.safetensors",
@@ -148,7 +148,7 @@
     "extra_networks_add_text_separator": " ",
     "sd_hypernetwork": "None",
     "gradio_theme": "gradio/base",
-    "theme_style": "Light",
+    "theme_style": "Auto",
     "return_grid": true,
     "return_mask": false,
     "return_mask_composite": false,
@@ -348,5 +348,7 @@
     "tac_chantFile": "demo-chants.json",
     "tac_keymap": "{\n    \"MoveUp\": \"ArrowUp\",\n    \"MoveDown\": \"ArrowDown\",\n    \"JumpUp\": \"PageUp\",\n    \"JumpDown\": \"PageDown\",\n    \"JumpToStart\": \"Home\",\n    \"JumpToEnd\": \"End\",\n    \"ChooseSelected\": \"Enter\",\n    \"ChooseFirstOrSelected\": \"Tab\",\n    \"Close\": \"Escape\"\n}",
     "tac_colormap": "{\n    \"danbooru\": {\n        \"-1\": [\"red\", \"maroon\"],\n        \"0\": [\"lightblue\", \"dodgerblue\"],\n        \"1\": [\"indianred\", \"firebrick\"],\n        \"3\": [\"violet\", \"darkorchid\"],\n        \"4\": [\"lightgreen\", \"darkgreen\"],\n        \"5\": [\"orange\", \"darkorange\"]\n    },\n    \"e621\": {\n        \"-1\": [\"red\", \"maroon\"],\n        \"0\": [\"lightblue\", \"dodgerblue\"],\n        \"1\": [\"gold\", \"goldenrod\"],\n        \"3\": [\"violet\", \"darkorchid\"],\n        \"4\": [\"lightgreen\", \"darkgreen\"],\n        \"5\": [\"tomato\", \"darksalmon\"],\n        \"6\": [\"red\", \"maroon\"],\n        \"7\": [\"whitesmoke\", \"black\"],\n        \"8\": [\"seagreen\", \"darkseagreen\"]\n    }\n}",
-    "tac_refreshTempFiles": "Refresh TAC temp files"
+    "tac_refreshTempFiles": "Refresh TAC temp files",
+    "arh_show_min_width_or_height": false,
+    "arh_min_width_or_height": 1024
 }
