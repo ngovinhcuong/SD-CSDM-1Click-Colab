@@ -174,7 +174,7 @@
     "notification_audio_enable": false,
     "notification_audio_path": "html/notification.mp3",
     "show_progress_every_n_steps": 1,
-    "show_progress_type": "Approx NN",
+    "show_progress_type": "TAESD",
     "live_preview_content": "Combined",
     "live_preview_refresh_period": 1.0,
     "show_samplers": [
@@ -197,7 +197,9 @@
         "LMS Karras",
         "DPM2 a Karras",
         "DPM++ 2S a Karras",
-        "DPM++ SDE Karras"
+        "DPM++ SDE Karras",
+        "DPM++ 2M SDE",
+        "DPM++ 2M SDE Karras"
     ],
     "fallback_sampler": "Euler a",
     "xyz_fallback_sampler": "None",
@@ -263,7 +265,7 @@
     "image_browser_img_tooltips": true,
     "image_browser_scoring_type": "aesthetic_score",
     "image_browser_show_progress": true,
-    "images_history_preload": false,
+    "images_history_preload": true,
     "images_record_paths": true,
     "images_delete_message": true,
     "images_history_page_columns": 6.0,
@@ -356,5 +358,18 @@
     "ad_save_images_before": false,
     "ad_only_seleted_scripts": true,
     "ad_script_names": "dynamic_prompting,dynamic_thresholding,wildcard_recursive,wildcards",
-    "ad_bbox_sortby": "None"
+    "ad_bbox_sortby": "None",
+    "lora_add_hashes_to_infotext": true,
+    "deforum_keep_3d_models_in_vram": false,
+    "deforum_enable_persistent_settings": false,
+    "deforum_persistent_settings_path": "models/Deforum/deforum_persistent_settings.txt",
+    "deforum_ffmpeg_location": "ffmpeg",
+    "deforum_ffmpeg_crf": 20,
+    "deforum_ffmpeg_preset": "medium",
+    "deforum_debug_mode_enabled": false,
+    "deforum_save_gen_info_as_srt": false,
+    "deforum_embed_srt": false,
+    "deforum_save_gen_info_as_srt_params": [
+        "Noise Schedule"
+    ]
 }
