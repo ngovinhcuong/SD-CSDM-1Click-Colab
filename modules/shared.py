@@ -4,10 +4,10 @@ import time
 import json
 import datetime
 import urllib.request
+from enum import Enum
 import gradio as gr
 import tqdm
 import requests
-# from ldm.models.diffusion.ddpm import LatentDiffusion
 from modules import errors, ui_components, shared_items, cmd_args
 from modules.paths_internal import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 import modules.interrogate
@@ -70,6 +70,11 @@ ui_reorder_categories = [
     "override_settings",
     "scripts",
 ]
+
+
+class Backend(Enum):
+    ORIGINAL = 1
+    DIFFUSERS = 2
 
 
 def reload_hypernetworks():
@@ -172,7 +177,7 @@ state.server_start = time.time()
 
 
 class OptionInfo:
-    def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None):
+    def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None, comment_before='', comment_after=''):
         self.default = default
         self.label = label
         self.component = component
@@ -180,10 +185,28 @@ class OptionInfo:
         self.onchange = onchange
         self.section = section
         self.refresh = refresh
+        self.comment_before = comment_before # HTML text that will be added after label in UI
+        self.comment_after = comment_after # HTML text that will be added before label in UI
+
+    def link(self, label, uri):
+        self.comment_before += f"[<a href='{uri}' target='_blank'>{label}</a>]"
+        return self
+
+    def js(self, label, js_func):
+        self.comment_before += f"[<a onclick='{js_func}(); return false'>{label}</a>]"
+        return self
+
+    def info(self, info):
+        self.comment_after += f"<span class='info'>({info})</span>"
+        return self
+
+    def needs_restart(self):
+        self.comment_after += " <span class='info'>(requires restart)</span>"
+        return self
 
 
 def options_section(section_identifier, options_dict):
-    for _k, v in options_dict.items():
+    for v in options_dict.values():
         v.section = section_identifier
     return options_dict
 
@@ -444,9 +467,9 @@ options_templates.update(options_section(('ui', "Live previews"), {
     "live_previews_enable": OptionInfo(True, "Show live previews of the created image"),
     "show_progress_grid": OptionInfo(True, "Show previews of all images generated in a batch as a grid"),
     "notification_audio_enable": OptionInfo(False, "Play a sound when images are finished generating"),
-    "notification_audio_path": OptionInfo("html/notification.mp3","Path to notification sound",component_args=hide_dirs),
-    "show_progress_every_n_steps": OptionInfo(1, "Show new live preview image every N sampling steps. Set to -1 to show after completion of batch.", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
-    "show_progress_type": OptionInfo("Approx NN", "Image creation progress preview mode", gr.Radio, {"choices": ["Full", "Approx NN", "Approx cheap"]}),
+    "notification_audio_path": OptionInfo("html/notification.mp3","Path to notification sound", component_args=hide_dirs),
+    "show_progress_every_n_steps": OptionInfo(1, "Live preview display period", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}).info("in sampling steps - show new live preview image every N sampling steps; -1 = only show after completion of batch"),
+    "show_progress_type": OptionInfo("TAESD", "Live preview method", gr.Radio, {"choices": ["Full", "Approx NN", "Approx cheap", "TAESD"]}).info("Full = slow but pretty; Approx NN and TAESD = fast but low quality; Approx cheap = super fast but terrible otherwise"),
     "live_preview_content": OptionInfo("Combined", "Live preview subject", gr.Radio, {"choices": ["Combined", "Prompt", "Negative prompt"]}),
     "live_preview_refresh_period": OptionInfo(250, "Progressbar/preview update period, in milliseconds")
 }))
@@ -634,6 +657,13 @@ opts = Options()
 config_filename = cmd_opts.config
 opts.load(config_filename)
 cmd_opts = cmd_args.compatibility_args(opts, cmd_opts)
+if cmd_opts.backend == 'diffusers':
+    log.info('Overriding backend to Diffusers')
+    opts.data['sd_backend'] = 'Diffusers'
+if cmd_opts.backend == 'original':
+    log.info('Overriding backend to Diffusers')
+    opts.data['sd_backend'] = 'Original'
+backend = Backend.DIFFUSERS if opts.sd_backend == 'Diffusers' else Backend.ORIGINAL
 
 prompt_styles = modules.styles.StyleDatabase(opts.styles_dir)
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure

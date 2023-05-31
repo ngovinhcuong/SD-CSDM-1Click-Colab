@@ -17,9 +17,9 @@ from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
 from installer import git_commit
 import modules.sd_hijack
-from modules import devices, prompt_parser, masking, sd_samplers, lowvram, generation_parameters_copypaste, script_callbacks, extra_networks, sd_vae_approx, scripts # pylint: disable=unused-import
+from modules import devices, prompt_parser, masking, sd_samplers, lowvram, generation_parameters_copypaste, script_callbacks, extra_networks, sd_vae_approx, scripts, sd_samplers_common # pylint: disable=unused-import
 from modules.sd_hijack import model_hijack
-from modules.shared import opts, cmd_opts, state, log
+from modules.shared import opts, cmd_opts, state, log, backend, Backend
 import modules.shared as shared
 import modules.paths as paths
 import modules.face_restoration
@@ -220,7 +220,7 @@ class StableDiffusionProcessing:
         source_image = devices.cond_cast_float(source_image)
         # HACK: Using introspection as the Depth2Image model doesn't appear to uniquely
         # identify itself with a field common to all models. The conditioning_key is also hybrid.
-        if opts.sd_backend == 'Diffusers': # TODO: img2img_image_conditioning
+        if backend == Backend.DIFFUSERS: # TODO: Diffusers img2img_image_conditioning
             return latent_image.new_zeros(latent_image.shape[0], 5, 1, 1)
         if isinstance(self.sd_model, LatentDepth2ImageDiffusion):
             return self.depth2img_image_conditioning(source_image)
@@ -424,6 +424,12 @@ def fix_seed(p):
 
 def create_infotext(p: StableDiffusionProcessing, all_prompts, all_seeds, all_subseeds, comments=None, iteration=0, position_in_batch=0): # pylint: disable=unused-argument
     index = position_in_batch + iteration * p.batch_size
+
+    uses_ensd = opts.eta_noise_seed_delta != 0
+    if uses_ensd:
+        uses_ensd = sd_samplers_common.is_sampler_using_eta_noise_seed_delta(p)
+
+
     generation_params = {
         "Steps": p.steps,
         "Sampler": p.sampler_name,
@@ -441,7 +447,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts, all_seeds, all_su
         "Denoising strength": getattr(p, 'denoising_strength', None),
         "Conditional mask weight": getattr(p, "inpainting_mask_weight", shared.opts.inpainting_mask_weight) if p.is_using_inpainting_conditioning else None,
         "Clip skip": p.clip_skip,
-        "ENSD": None if opts.eta_noise_seed_delta == 0 else opts.eta_noise_seed_delta,
+        "ENSD": opts.eta_noise_seed_delta if uses_ensd else None,
         "Init image hash": getattr(p, 'init_img_hash', None),
         "Version": git_commit,
         "Token merging ratio": None if not (opts.token_merging or cmd_opts.token_merging) or opts.token_merging_hr_only else opts.token_merging_ratio,
@@ -460,6 +466,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts, all_seeds, all_su
     return f"{all_prompts[index]}{negative_prompt_text}\n{generation_params_text}".strip()
 
 
+"""
 def print_profile(profile, msg: str):
     try:
         from rich import print # pylint: disable=redefined-builtin
@@ -468,6 +475,24 @@ def print_profile(profile, msg: str):
     lines = profile.key_averages().table(sort_by="cuda_time_total", row_limit=20)
     lines = lines.split('\n')
     lines = [l for l in lines if '/profiler' not in l]
+    print(f'Profile {msg}:', '\n'.join(lines))
+"""
+
+
+def print_profile(profile, msg: str):
+    import io
+    import pstats
+    try:
+        from rich import print # pylint: disable=redefined-builtin
+    except:
+        pass
+    profile.disable()
+    stream = io.StringIO()
+    ps = pstats.Stats(profile, stream=stream)
+    ps.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(15)
+    profile = None
+    lines = stream.getvalue().split('\n')
+    lines = [l for l in lines if '<frozen' not in l and '{built-in' not in l and '/logging' not in l and '/rich' not in l]
     print(f'Profile {msg}:', '\n'.join(lines))
 
 
@@ -490,12 +515,18 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             log.debug('Token merging applied')
 
         if cmd_opts.profile:
+            """
             import torch.profiler # pylint: disable=redefined-outer-name
-            # activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA]
             with torch.profiler.profile(profile_memory=True, with_modules=True) as prof:
                 with torch.profiler.record_function("process_images"):
                     res = process_images_inner(p)
             print_profile(prof, 'process_images')
+            """
+            import cProfile
+            pr = cProfile.Profile()
+            pr.enable()
+            res = process_images_inner(p)
+            print_profile(pr, 'Torch')
         else:
             res = process_images_inner(p)
     finally:
@@ -522,7 +553,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         assert p.prompt is not None
     seed = get_fixed_seed(p.seed)
     subseed = get_fixed_seed(p.subseed)
-    if opts.sd_backend == 'Original':
+    if backend == Backend.ORIGINAL:
         modules.sd_hijack.model_hijack.apply_circular(p.tiling)
         modules.sd_hijack.model_hijack.clear_comments()
     comments = {}
@@ -573,11 +604,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         cache[0] = (required_prompts, steps)
         return cache[1]
 
-    ema_scope_context = p.sd_model.ema_scope if opts.sd_backend == 'Original' else nullcontext
+    ema_scope_context = p.sd_model.ema_scope if backend == Backend.ORIGINAL else nullcontext
     with torch.no_grad(), ema_scope_context():
         with devices.autocast():
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
-            if shared.opts.live_previews_enable and opts.show_progress_type == "Approx NN" and opts.sd_backend == 'Original':
+            if shared.opts.live_previews_enable and opts.show_progress_type == "Approx NN" and backend == Backend.ORIGINAL:
                 sd_vae_approx.model()
         if state.job_count == -1:
             state.job_count = p.n_iter
@@ -618,7 +649,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if p.n_iter > 1:
                 shared.state.job = f"Batch {n+1} out of {p.n_iter}"
 
-            if opts.sd_backend == 'Original':
+            if backend == Backend.ORIGINAL:
                 uc = get_conds_with_caching(prompt_parser.get_learned_conditioning, negative_prompts, p.steps * step_multiplier, cached_uc)
                 c = get_conds_with_caching(prompt_parser.get_multicond_learned_conditioning, prompts, p.steps * step_multiplier, cached_c)
                 if len(model_hijack.comments) > 0:
@@ -649,7 +680,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     devices.torch_gc()
                 if p.scripts is not None:
                     p.scripts.postprocess_batch(p, x_samples_ddim, batch_number=n)
-            else: # TODO Diffusers
+            else: # TODO Diffusers main processing
                 generator = [torch.Generator(device="cpu").manual_seed(s) for s in seeds]
                 if shared.sd_model.scheduler.name != p.sampler_name:
                     sampler = sd_samplers.all_samplers_map.get(p.sampler_name, None)
@@ -671,7 +702,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             for i, x_sample in enumerate(x_samples_ddim):
                 p.batch_index = i
-                if opts.sd_backend == 'Original':
+                if backend == Backend.ORIGINAL:
                     x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
                     x_sample = x_sample.astype(np.uint8)
                 else:
@@ -836,7 +867,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             if self.hr_upscaler is not None:
                 self.extra_generation_params["Hires upscaler"] = self.hr_upscaler
 
-    def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
+    def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # TODO this is majority of processing time
         self.sampler = sd_samplers.create_sampler(self.sampler_name, self.sd_model)
         latent_scale_mode = shared.latent_upscale_modes.get(self.hr_upscaler, None) if self.hr_upscaler is not None else shared.latent_upscale_modes.get(shared.latent_upscale_default_mode, "nearest")
         if self.enable_hr and latent_scale_mode is None:

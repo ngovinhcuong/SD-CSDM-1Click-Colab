@@ -1,5 +1,21 @@
 # Change Log for SD.Next
 
+## Update for 05/30/2023
+
+Another bigger one...And more to come in the next few days...
+
+- new live preview mode: taesd  
+  i really like this one, so its enabled as default for new installs  
+- settings search feature  
+- new sampler: sde++ 2m sde  
+- fully common save/zip/delete (new) options in all tabs  
+  which (again) meant rework of process image tab  
+- system info tab: live gpu utilization/memory graphs for nvidia gpus  
+- updated controlnet interface  
+- minor style changes  
+- updated lora, swinir, scunet and ldsr code from upstream  
+- start of merge from a1111 v1.3  
+
 ## Update for 05/26/2023
 
 Some quality-of-life improvements...
