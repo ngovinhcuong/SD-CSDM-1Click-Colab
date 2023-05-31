@@ -1,5 +1,5 @@
 {
-    "sd_model_checkpoint": "Counterfeit-V3.0_fp16.safetensors",
+    "sd_model_checkpoint": "abyssorangemix3AOM3_aom3a1b.safetensors",
     "sd_checkpoint_cache": 0,
     "sd_vae_checkpoint_cache": 0,
     "sd_vae": "clearvae_main.safetensors",
@@ -216,10 +216,10 @@
     "uni_pc_skip_type": "time_quadratic",
     "uni_pc_order": 2,
     "uni_pc_lower_order_final": true,
-    "token_merging": true,
-    "token_merging_ratio": 0.1,
-    "token_merging_hr_only": true,
-    "token_merging_ratio_hr": 0.1,
+    "token_merging": false,
+    "token_merging_ratio": 0,
+    "token_merging_hr_only": false,
+    "token_merging_ratio_hr": 0,
     "token_merging_random": false,
     "token_merging_merge_attention": true,
     "token_merging_merge_cross_attention": false,
@@ -371,5 +371,6 @@
     "deforum_embed_srt": false,
     "deforum_save_gen_info_as_srt_params": [
         "Noise Schedule"
-    ]
+    ],
+    "def_img_cfg": "1.5"
 }
