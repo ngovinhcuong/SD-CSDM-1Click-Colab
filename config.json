@@ -1,5 +1,5 @@
 {
-    "sd_model_checkpoint": "abyssorangemix3AOM3_aom3a1b.safetensors",
+    "sd_model_checkpoint": "Counterfeit-V3.0_fp16.safetensors",
     "sd_checkpoint_cache": 0,
     "sd_vae_checkpoint_cache": 0,
     "sd_vae": "clearvae_main.safetensors",
@@ -171,8 +171,8 @@
     "show_progressbar": true,
     "live_previews_enable": true,
     "show_progress_grid": true,
-    "notification_audio_enable": false,
-    "notification_audio_path": "html/notification.mp3",
+    "notification_audio_enable": true,
+    "notification_audio_path": "/content/Vlad-SD-Google-Colab/html/notification.mp3",
     "show_progress_every_n_steps": 1,
     "show_progress_type": "TAESD",
     "live_preview_content": "Combined",
