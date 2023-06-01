@@ -2023,5 +2023,13 @@
     "customscript/wildcard_recursive.py/img2img/**negative keywords**/visible": true,
     "customscript/wildcard_recursive.py/img2img/**negative keywords**/value": true,
     "customscript/wildcard_recursive.py/img2img/Static wildcards/visible": true,
-    "customscript/wildcard_recursive.py/img2img/Static wildcards/value": false
+    "customscript/wildcard_recursive.py/img2img/Static wildcards/value": false,
+    "customscript/custom_code.py/txt2img/Indent level/visible": true,
+    "customscript/custom_code.py/txt2img/Indent level/value": 2,
+    "customscript/run_n_times.py/txt2img/n/visible": true,
+    "customscript/run_n_times.py/txt2img/n/value": "",
+    "customscript/custom_code.py/img2img/Indent level/visible": true,
+    "customscript/custom_code.py/img2img/Indent level/value": 2,
+    "customscript/run_n_times.py/img2img/n/visible": true,
+    "customscript/run_n_times.py/img2img/n/value": ""
 }
