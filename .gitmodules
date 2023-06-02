@@ -47,3 +47,6 @@
 [submodule "extensions-builtin/sd-controlnet"]
 	path = extensions-builtin/sd-controlnet
 	url = https://github.com/Mikubill/sd-webui-controlnet
+[submodule "extensions-builtin/sd-webui-tunnels"]
+	path = extensions-builtin/sd-webui-tunnels
+	url = https://github.com/Bing-su/sd-webui-tunnels/
