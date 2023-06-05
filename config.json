@@ -175,7 +175,7 @@
     "notification_audio_path": "/content/Vlad-SD-Google-Colab/html/notification.mp3",
     "show_progress_every_n_steps": 1,
     "show_progress_type": "TAESD",
-    "live_preview_content": "Combined",
+    "live_preview_content": "Prompt",
     "live_preview_refresh_period": 1.0,
     "show_samplers": [
         "Euler a",
@@ -242,7 +242,7 @@
     "sd_lora": "None",
     "lora_preferred_name": "Alias from file",
     "lora_functional": false,
-    "image_browser_active_tabs": "txt2img, img2img, txt2img-grids, img2img-grids, Extras, Favorites, Others",
+    "image_browser_active_tabs": "txt2img, img2img, txt2img-grids, img2img-grids, Extras, Favorites, Others, All, Maintenance",
     "image_browser_hidden_components": [],
     "image_browser_with_subdirs": true,
     "image_browser_preload": false,
@@ -372,5 +372,6 @@
     "deforum_save_gen_info_as_srt_params": [
         "Noise Schedule"
     ],
-    "def_img_cfg": "1.5"
+    "def_img_cfg": "1.5",
+    "controlnet_disable_openpose_edit": false
 }
