@@ -1,5 +1,5 @@
 {
-    "sd_model_checkpoint": "Counterfeit-V3.0_fp16.safetensors",
+    "sd_model_checkpoint": "DreamShaper_6_NoVae_pruned.safetensors",
     "sd_checkpoint_cache": 0,
     "sd_vae_checkpoint_cache": 0,
     "sd_vae": "clearvae_main.safetensors",
@@ -251,7 +251,7 @@
     "control_net_model_cache_size": 1,
     "control_net_no_detectmap": true,
     "control_net_detectmap_autosaving": false,
-    "control_net_allow_script_control": false,
+    "control_net_allow_script_control": true,
     "control_net_sync_field_args": true,
     "controlnet_show_batch_images_in_ui": false,
     "controlnet_increment_seed_during_batch": false,
