@@ -235,8 +235,8 @@ def start_ui():
         favicon_path='html/logo.ico',
         app_kwargs={
             "version": f'0.0.{installer.git_commit}',
-            "title": "SD.Next",
-            "description": "SD.Next",
+            "title": "SD-ChiaSeDamMe",
+            "description": "SD-ChiaSeDamMe",
             "docs_url": "/docs",
             "redocs_url": "/redocs",
             "swagger_ui_parameters": {
